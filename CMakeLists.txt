@@ -15,7 +15,13 @@ endif()
 add_subdirectory(tweaky)
 
 option(TWEAKY_WHACKX "Build whackx (game using tweaky)" ${is_root_project})
+option(TWEAKY_TEST "Build test" ${is_root_project})
 
 if(TWEAKY_WHACKX)
   add_subdirectory(whackx)
+endif()
+
+if(TWEAKY_TEST)
+  enable_testing()
+  add_subdirectory(test)
 endif()
