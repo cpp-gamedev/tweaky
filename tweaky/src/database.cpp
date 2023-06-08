@@ -10,16 +10,16 @@ namespace fs = std::filesystem;
 db::Map g_map{};
 std::string g_json_path{};
 
-template <NumericT T>
-T get_number(std::string_view const id, T const fallback) {
+template <typename T>
+T get_data(std::string_view const id, T const fallback) {
 	auto it = g_map.find(id);
 	if (it == g_map.end()) { return fallback; }
 	auto const& payload = it->second;
-	if (!std::holds_alternative<Data<T>>(payload)) { return fallback; }
-	return std::get<Data<T>>(payload).value;
+	if (!std::holds_alternative<T>(payload)) { return fallback; }
+	return std::get<T>(payload);
 }
 
-bool to_data(dj::Json const& json, std::variant<IntData, FloatData>& out) {
+bool to_data(dj::Json const& json, std::variant<IntData, FloatData, BoolData>& out) {
 	auto const type = json["type"].as_string();
 	if (type == type_name<int>()) {
 		auto data = IntData{};
@@ -28,6 +28,11 @@ bool to_data(dj::Json const& json, std::variant<IntData, FloatData>& out) {
 		return true;
 	} else if (type == type_name<float>()) {
 		auto data = FloatData{};
+		from_json(json, data);
+		out = data;
+		return true;
+	} else if (type == type_name<Boolean>()) {
+		auto data = BoolData{};
 		from_json(json, data);
 		out = data;
 		return true;
@@ -56,7 +61,7 @@ auto db::load_or_create(std::string json_path) -> Result {
 	auto const json = dj::Json::from_file(g_json_path.c_str());
 	auto count = int{};
 	for (auto const& [id, in_data] : json.object_view()) {
-		auto out_data = std::variant<IntData, FloatData>{};
+		auto out_data = std::variant<IntData, FloatData, BoolData>{};
 		if (!to_data(in_data["data"], out_data)) { continue; }
 		auto name = Name{std::string{id}};
 		if (auto const label = in_data["label"].as_string(); !label.empty()) { name.set_label(std::string{label}); }
@@ -81,8 +86,9 @@ auto db::save() -> Result {
 	return Result{static_cast<int>(g_map.size())};
 }
 
-int db::get_int(std::string_view const id, int fallback) { return get_number(id, fallback); }
-float db::get_float(std::string_view const id, float fallback) { return get_number(id, fallback); }
+int db::get_int(std::string_view const id, int fallback) { return get_data<IntData>(id, {.value = fallback}).value; }
+float db::get_float(std::string_view const id, float fallback) { return get_data<FloatData>(id, {.value = fallback}).value; }
+bool db::get_bool(std::string_view id, bool fallback) { return get_data<BoolData>(id, {.value = fallback}).value; }
 
 void db::inspect(Inspector& out) {
 	bool dirty{};

@@ -3,10 +3,24 @@
 
 namespace tweaky {
 ///
+/// \brief Strongly typed boolean wrapper.
+///
+struct Boolean {
+	bool value{};
+
+	explicit constexpr operator bool() const { return value; }
+
+	bool operator==(Boolean const&) const = default;
+};
+
+///
 /// \brief Concept for an integral or floating point type.
 ///
 template <typename Type>
 concept NumericT = std::integral<Type> || std::floating_point<Type>;
+
+template <typename Type>
+concept DataTypeT = NumericT<Type> || std::same_as<Type, Boolean>;
 
 ///
 /// \brief Numeric range (inclusive).
@@ -27,7 +41,7 @@ struct InclusiveRange {
 /// \brief Numeric data describing a tweakable.
 ///
 template <NumericT Type>
-struct Data {
+struct NumericData {
 	///
 	/// \brief Current value.
 	///
@@ -41,9 +55,13 @@ struct Data {
 ///
 /// \brief Alias for int Data.
 ///
-using IntData = Data<int>;
+using IntData = NumericData<int>;
 ///
 /// \brief Alias for float Data.
 ///
-using FloatData = Data<float>;
+using FloatData = NumericData<float>;
+///
+/// \brief Alias for Boolean data.
+///
+using BoolData = Boolean;
 } // namespace tweaky

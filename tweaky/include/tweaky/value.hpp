@@ -5,7 +5,7 @@ namespace tweaky {
 ///
 /// \brief "Pointer" to a tweaky value in the database, identified by its string ID.
 ///
-template <NumericT Type>
+template <DataTypeT Type>
 class Value {
   public:
 	///
@@ -19,9 +19,9 @@ class Value {
 	Type get() const { return db::get<Type>(m_id); }
 
 	///
-	/// \brief Implicit conversion operator.
+	/// \brief Conversion operator.
 	///
-	operator Type() const { return get(); }
+	explicit(std::same_as<Type, bool>) operator Type() const { return get(); }
 
   private:
 	std::string m_id{};

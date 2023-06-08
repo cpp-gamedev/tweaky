@@ -10,7 +10,7 @@ namespace {
 constexpr std::string_view json_uri_v{"tweakables.json"};
 
 template <tweaky::NumericT Type>
-void print(tweaky::Name const& name, tweaky::Data<Type>& out) {
+void print(tweaky::Name const& name, tweaky::NumericData<Type>& out) {
 	std::cout << name.identifier() << ": " << out.value << " [" << out.range.min << " - " << out.range.max << "]\n";
 }
 
@@ -23,6 +23,11 @@ void print_tweaky_db() {
 
 		bool inspect(tweaky::Name const& name, tweaky::FloatData& out) final {
 			print(name, out);
+			return false;
+		}
+
+		bool inspect(tweaky::Name const& name, tweaky::BoolData& out) final {
+			std::cout << name.identifier() << ": " << std::boolalpha << out.value << "\n";
 			return false;
 		}
 	};

@@ -19,5 +19,10 @@ struct Inspector {
 	/// \returns true if modified.
 	///
 	virtual bool inspect(Name const& name, FloatData& out) = 0;
+	///
+	/// \brief Inspect a tweaky flags data object.
+	/// \returns true if modified.
+	///
+	virtual bool inspect(Name const& name, BoolData& out) = 0;
 };
 } // namespace tweaky
