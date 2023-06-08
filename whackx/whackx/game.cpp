@@ -12,19 +12,28 @@ Type random_range(Type lo, Type hi) {
 }
 
 void init_tweaky_db() {
+	using Name = tweaky::Name;
 	using Int = tweaky::IntData;
 	using Float = tweaky::FloatData;
 	auto map = tweaky::db::Map{
+		// number of rows
 		{"rows", Int{.value = 3, .range = {.min = 2, .max = 10}}},
+		// number of columns
 		{"columns", Int{.value = 3, .range = {.min = 2, .max = 10}}},
-		{"swap_rate (s)", Float{.value = 0.5f, .range = {.min = 0.1f, .max = 2.0f}}},
+		// rate at which X is swapped to a new Position
+		{Name{"swap_rate", "swap rate (s)"}, Float{.value = 0.5f, .range = {.min = 0.1f, .max = 2.0f}}},
 	};
 	tweaky::db::overwrite(std::move(map));
 }
 
 struct Inspector : tweaky::Inspector {
-	bool inspect(std::string_view id, tweaky::IntData& out) final { return ImGui::SliderInt(id.data(), &out.value, out.range.min, out.range.max); }
-	bool inspect(std::string_view id, tweaky::FloatData& out) final { return ImGui::SliderFloat(id.data(), &out.value, out.range.min, out.range.max); }
+	bool inspect(tweaky::Name const& name, tweaky::IntData& out) final {
+		return ImGui::SliderInt(name.label().data(), &out.value, out.range.min, out.range.max);
+	}
+
+	bool inspect(tweaky::Name const& name, tweaky::FloatData& out) final {
+		return ImGui::SliderFloat(name.label().data(), &out.value, out.range.min, out.range.max);
+	}
 };
 } // namespace
 
@@ -36,6 +45,11 @@ Position Position::make_random(std::uint32_t max_rows, std::uint32_t max_columns
 }
 
 Game::Game() {
+	// since we aren't shipping any data files, there won't be any data to load on the first run.
+	// initializing the database with appropriate values takes care of that case.
+	// App::run() then calls tweaky::db::load() before starting the game loop,
+	// which creates a new JSON file if not found, otherwise overwrites the database with JSON data.
+	// after the game loop ends, tweaky::db::save() stores the latest state of the in-memory database to disk.
 	init_tweaky_db();
 	randomize_target();
 }

@@ -28,6 +28,7 @@ target_sources(${PROJECT_NAME} PRIVATE
   include/tweaky/data.hpp
   include/tweaky/database.hpp
   include/tweaky/inspector.hpp
+  include/tweaky/name.hpp
   include/tweaky/value.hpp
 
   src/database.cpp

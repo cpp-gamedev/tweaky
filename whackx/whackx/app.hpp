@@ -4,7 +4,7 @@
 
 namespace whackx {
 struct App {
-	void run(std::string_view data_path);
+	void run();
 
 	gvdi::Instance gvdi{{400.0f, 400.0f}, "Whackx"};
 	Game game{};

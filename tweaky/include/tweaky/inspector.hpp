@@ -1,6 +1,6 @@
 #pragma once
 #include <tweaky/data.hpp>
-#include <string_view>
+#include <tweaky/name.hpp>
 
 namespace tweaky {
 ///
@@ -13,11 +13,11 @@ struct Inspector {
 	/// \brief Inspect a tweaky int data object.
 	/// \returns true if modified.
 	///
-	virtual bool inspect(std::string_view id, IntData& out) = 0;
+	virtual bool inspect(Name const& name, IntData& out) = 0;
 	///
 	/// \brief Inspect a tweaky float data object.
 	/// \returns true if modified.
 	///
-	virtual bool inspect(std::string_view id, FloatData& out) = 0;
+	virtual bool inspect(Name const& name, FloatData& out) = 0;
 };
 } // namespace tweaky

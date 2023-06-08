@@ -47,5 +47,7 @@ target_sources(${PROJECT_NAME} PRIVATE
   whackx/defines.hpp
   whackx/game.cpp
   whackx/game.hpp
+  whackx/io.cpp
+  whackx/io.hpp
   main.cpp
 )

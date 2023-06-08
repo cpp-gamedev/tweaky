@@ -1,33 +1,27 @@
 #include <whackx/app.hpp>
-#include <filesystem>
+#include <whackx/defines.hpp>
+#include <whackx/io.hpp>
 #include <iostream>
 
 namespace {
-namespace fs = std::filesystem;
-
-fs::path find_data(fs::path exe_path) {
-	for (auto path = exe_path.parent_path(); !path.empty() && path != path.parent_path(); path = path.parent_path()) {
-		auto ret = path / "data";
-		if (fs::is_directory(ret)) { return ret; }
-	}
-	return {};
-}
+constexpr std::string_view data_dir_v{"whackx-data"};
 } // namespace
 
 int main(int argc, char** argv) {
 	try {
 		if (argc < 1) {
-			std::cerr << "Cannot determine data path\n";
+			std::cerr << "Cannot determine data directory\n";
 			return EXIT_FAILURE;
 		}
 
-		auto data_path = find_data(argv[0]);
-		if (data_path.empty()) {
-			std::cerr << "Could not locate data\n";
+		if (!whackx::io::find_or_create_data(argv[0], data_dir_v)) {
+			std::cerr << "Could not locate / create data directory\n";
 			return EXIT_FAILURE;
 		}
 
-		whackx::App{}.run(data_path.generic_string());
+		if constexpr (whackx::debug_v) { std::cout << "Using data directory: " << whackx::io::data_dir() << "\n"; }
+
+		whackx::App{}.run();
 
 	} catch (std::exception const& e) {
 		std::cerr << "Fatal error: " << e.what() << "\n";

@@ -11,7 +11,7 @@ db::Map g_map{};
 std::string g_json_path{};
 
 template <NumericT T>
-T get_number(std::string const& id, T const fallback) {
+T get_number(std::string_view const id, T const fallback) {
 	auto it = g_map.find(id);
 	if (it == g_map.end()) { return fallback; }
 	auto const& payload = it->second;
@@ -38,7 +38,7 @@ bool to_data(dj::Json const& json, std::variant<IntData, FloatData>& out) {
 
 void db::overwrite(Map map) { g_map = std::move(map); }
 
-auto db::load(std::string json_path) -> Result {
+auto db::load_or_create(std::string json_path) -> Result {
 	if (!fs::is_regular_file(json_path)) {
 		// attempt to create empty JSON
 		auto file = std::ofstream{json_path};
@@ -57,8 +57,10 @@ auto db::load(std::string json_path) -> Result {
 	auto count = int{};
 	for (auto const& [id, in_data] : json.object_view()) {
 		auto out_data = std::variant<IntData, FloatData>{};
-		if (!to_data(in_data, out_data)) { continue; }
-		g_map.insert_or_assign(std::string{id}, out_data);
+		if (!to_data(in_data["data"], out_data)) { continue; }
+		auto name = Name{std::string{id}};
+		if (auto const label = in_data["label"].as_string(); !label.empty()) { name.set_label(std::string{label}); }
+		g_map.insert_or_assign(std::move(name), out_data);
 		++count;
 	}
 	return Result{count};
@@ -69,21 +71,24 @@ auto db::save() -> Result {
 	if (g_map.empty()) { return Result{0}; }
 
 	auto json = dj::Json{};
-	for (auto const& [id, data] : g_map) {
-		auto& out_entry = json[id];
-		std::visit([&out_entry](auto const& data) { to_json(out_entry, data); }, data);
+	for (auto const& [name, data] : g_map) {
+		auto& out_entry = json[name.identifier()];
+		if (!name.label().empty()) { out_entry["label"] = name.label(); }
+		auto& out_data = out_entry["data"];
+		std::visit([&out_data](auto const& data) { to_json(out_data, data); }, data);
 	}
 	if (!json.to_file(g_json_path.c_str())) { return Result::eError; }
 	return Result{static_cast<int>(g_map.size())};
 }
 
-int db::get_int(std::string const& id, int fallback) { return get_number(id, fallback); }
-float db::get_float(std::string const& id, float fallback) { return get_number(id, fallback); }
+int db::get_int(std::string_view const id, int fallback) { return get_number(id, fallback); }
+float db::get_float(std::string_view const id, float fallback) { return get_number(id, fallback); }
 
 void db::inspect(Inspector& out) {
 	bool dirty{};
-	for (auto& [id, data] : g_map) {
-		dirty |= std::visit([&out, id](auto& data) { return out.inspect(id, data); }, data);
+	for (auto& kvp : g_map) {
+		auto const& name = kvp.first;
+		dirty |= std::visit([&out, &name](auto& data) { return out.inspect(name, data); }, kvp.second);
 	}
 	if (dirty) { save(); }
 }

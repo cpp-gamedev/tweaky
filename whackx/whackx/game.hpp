@@ -25,7 +25,7 @@ struct Game {
 
 	tweaky::Value<std::uint32_t> rows{"rows"};
 	tweaky::Value<std::uint32_t> columns{"columns"};
-	tweaky::Value<float> swap_rate{"swap_rate (s)"};
+	tweaky::Value<float> swap_rate{"swap_rate"};
 
 	std::chrono::duration<float> elapsed{};
 	Position target{};
