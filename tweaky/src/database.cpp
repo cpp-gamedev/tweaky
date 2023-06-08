@@ -88,7 +88,7 @@ auto db::save() -> Result {
 
 int db::get_int(std::string_view const id, int fallback) { return get_data<IntData>(id, {.value = fallback}).value; }
 float db::get_float(std::string_view const id, float fallback) { return get_data<FloatData>(id, {.value = fallback}).value; }
-bool db::get_bool(std::string_view id, bool fallback) { return get_data<BoolData>(id, {.value = fallback}).value; }
+bool db::get_bool(std::string_view const id, bool fallback) { return get_data<BoolData>(id, {.value = fallback}).value; }
 
 void db::inspect(Inspector& out) {
 	bool dirty{};

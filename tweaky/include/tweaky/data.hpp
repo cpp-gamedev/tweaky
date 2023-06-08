@@ -19,6 +19,9 @@ struct Boolean {
 template <typename Type>
 concept NumericT = std::integral<Type> || std::floating_point<Type>;
 
+///
+/// \brief Concept for all valid tweaky data types.
+///
 template <typename Type>
 concept DataTypeT = NumericT<Type> || std::same_as<Type, Boolean>;
 
