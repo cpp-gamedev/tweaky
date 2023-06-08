@@ -15,6 +15,7 @@ void init_tweaky_db() {
 	using Name = tweaky::Name;
 	using Int = tweaky::IntData;
 	using Float = tweaky::FloatData;
+	using Bool = tweaky::BoolData;
 	auto map = tweaky::db::Map{
 		// number of rows
 		{"rows", Int{.value = 3, .range = {.min = 2, .max = 10}}},
@@ -22,6 +23,8 @@ void init_tweaky_db() {
 		{"columns", Int{.value = 3, .range = {.min = 2, .max = 10}}},
 		// rate at which X is swapped to a new Position
 		{Name{"swap_rate", "swap rate (s)"}, Float{.value = 0.5f, .range = {.min = 0.1f, .max = 2.0f}}},
+		// pause
+		{"pause", Bool{.value = false}},
 	};
 	tweaky::db::overwrite(std::move(map));
 }
@@ -34,6 +37,8 @@ struct Inspector : tweaky::Inspector {
 	bool inspect(tweaky::Name const& name, tweaky::FloatData& out) final {
 		return ImGui::SliderFloat(name.label().data(), &out.value, out.range.min, out.range.max);
 	}
+
+	bool inspect(tweaky::Name const& name, tweaky::BoolData& out) final { return ImGui::Checkbox(name.label().data(), &out.value); }
 };
 } // namespace
 
@@ -55,7 +60,7 @@ Game::Game() {
 }
 
 void Game::tick(std::chrono::duration<float> dt) {
-	elapsed += dt;
+	if (!paused) { elapsed += dt; }
 	if (elapsed.count() >= swap_rate || is_target_out_of_bounds()) { randomize_target(); }
 
 	if (ImGui::Begin("Whackx", {}, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -79,6 +84,7 @@ void Game::tick(std::chrono::duration<float> dt) {
 bool Game::is_target_out_of_bounds() const { return target.row >= rows || target.column >= columns; }
 
 void Game::increment_score() {
+	if (paused) { return; }
 	++score;
 	randomize_target();
 }
