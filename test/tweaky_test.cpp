@@ -26,11 +26,13 @@ void perform_tests() {
 	auto map = db::Map{
 		{"forty_two", IntData{.value = 42}},
 		{"pi", FloatData{.value = std::numbers::pi_v<float>}},
+		{"universe", BoolData{.value = true}},
 	};
 	db::overwrite(std::move(map));
 
 	EXPECT(tweaky::Value<int>{"forty_two"} == 42);
 	EXPECT(nearly_equal(tweaky::Value<float>{"pi"}, std::numbers::pi_v<float>));
+	EXPECT(tweaky::Value<bool>{"universe"});
 }
 } // namespace
 
