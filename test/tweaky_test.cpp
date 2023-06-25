@@ -1,4 +1,5 @@
 #include <tweaky/value.hpp>
+#include <cstdint>
 #include <iostream>
 #include <numbers>
 

@@ -2,7 +2,7 @@ include(FetchContent)
 
 FetchContent_Declare(djson
   GIT_REPOSITORY https://github.com/karnkaul/djson
-  GIT_TAG c8e8a0c
+  GIT_TAG 0273657
 )
 FetchContent_MakeAvailable(djson)
 
